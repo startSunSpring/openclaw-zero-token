@@ -1,6 +1,6 @@
 # OpenClaw Zero Token
 
-**Zero API Token Cost** — Free access to AI models via browser-based authentication (DeepSeek, Qwen, Kimi, Claude, Doubao, ChatGPT, and more).
+**Zero API Token Cost** — Free access to AI models via browser-based authentication (ChatGPT, Claude, Gemini, DeepSeek, Qwen, Doubao, Kimi, GLM, Grok, Manus, and more).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

@@ -1,6 +1,6 @@
 # OpenClaw Zero Token
 
-**免 API Token 使用大模型** - 通过浏览器登录方式免费使用 DeepSeek、豆包、Claude、ChatGPT 等 AI 模型。
+**免 API Token 使用大模型** - 通过浏览器登录方式免费使用 ChatGPT、Claude、Gemini、DeepSeek、千问、豆包、Kimi、智谱清言、Grok、Manus 等 AI 模型。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
