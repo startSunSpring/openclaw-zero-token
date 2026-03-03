@@ -8,21 +8,21 @@ import {
   type ToolResultMessage,
 } from "@mariozechner/pi-ai";
 import {
-  ZWebClientBrowser,
-  type ZWebClientOptions,
-} from "../providers/glm-web-client-browser.js";
+  GlmIntlWebClientBrowser,
+  type GlmIntlWebClientOptions,
+} from "../providers/glm-intl-web-client-browser.js";
 
 const sessionMap = new Map<string, string>();
 
-export function createZWebStreamFn(cookieOrJson: string): StreamFn {
-  let options: ZWebClientOptions;
+export function createGlmIntlWebStreamFn(cookieOrJson: string): StreamFn {
+  let options: GlmIntlWebClientOptions;
   try {
     const parsed = JSON.parse(cookieOrJson);
     options = parsed;
   } catch {
-    options = { cookie: cookieOrJson, xsrfToken: "" };
+    options = { cookie: cookieOrJson, userAgent: "Mozilla/5.0" };
   }
-  const client = new ZWebClientBrowser(options);
+  const client = new GlmIntlWebClientBrowser(options);
 
   return (model, context, streamOptions) => {
     const stream = createAssistantMessageEventStream();
@@ -32,7 +32,7 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
         await client.init();
 
         const sessionKey = (context as unknown as { sessionId?: string }).sessionId || "default";
-        let sessionId = sessionMap.get(sessionKey);
+        let conversationId = sessionMap.get(sessionKey);
 
         const messages = context.messages || [];
         const systemPrompt = (context as unknown as { systemPrompt?: string }).systemPrompt || "";
@@ -69,7 +69,7 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
         // Build prompt based on conversation state
         let prompt = "";
 
-        if (!sessionId) {
+        if (!conversationId) {
           // First turn: aggregate all history including system prompt
           const historyParts: string[] = [];
           let systemPromptContent = systemPrompt;
@@ -144,29 +144,29 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
         }
 
         // Add tool reminder for continuing conversations
-        if (toolPrompt && sessionId) {
+        if (toolPrompt && conversationId) {
           prompt +=
             '\n\n[SYSTEM HINT]: Keep in mind your available tools. To use a tool, you MUST output the EXACT XML format: <tool_call id="unique_id" name="tool_name">{"arg": "value"}</tool_call>. Using plain text to describe your action will FAIL to execute the tool.';
         }
 
         if (!prompt) {
-          throw new Error("No message found to send to ChatGLM API");
+          throw new Error("No message found to send to GLM International API");
         }
 
-        console.log(`[ZWebStream] Starting run for session: ${sessionKey}`);
-        console.log(`[ZWebStream] Conversation ID: ${sessionId || "new"}`);
-        console.log(`[ZWebStream] Tools available: ${tools.length}`);
-        console.log(`[ZWebStream] Prompt length: ${prompt.length}`);
+        console.log(`[GlmIntlWebStream] Starting run for session: ${sessionKey}`);
+        console.log(`[GlmIntlWebStream] Conversation ID: ${conversationId || "new"}`);
+        console.log(`[GlmIntlWebStream] Tools available: ${tools.length}`);
+        console.log(`[GlmIntlWebStream] Prompt length: ${prompt.length}`);
 
         const responseStream = await client.chatCompletions({
-          sessionId,
+          conversationId,
           message: prompt,
           model: model.id,
           signal: streamOptions?.signal,
         });
 
         if (!responseStream) {
-          throw new Error("ChatGLM API returned empty response body");
+          throw new Error("GLM International API returned empty response body");
         }
 
         const reader = responseStream.getReader();
@@ -368,7 +368,7 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
                   } catch (e) {
                     part.arguments = { raw: argStr };
                     console.error(
-                      `[Qwen Stream] Failed to parse JSON for tool call ${currentToolName}:`,
+                      `[GlmIntlWebStream] Failed to parse JSON for tool call ${currentToolName}:`,
                       argStr,
                       "\nError:",
                       e,
@@ -413,6 +413,7 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
           checkTags();
         };
 
+        // Process GLM International API response (SSE format)
         const processLine = (line: string) => {
           if (!line || !line.startsWith("data:")) {
             return;
@@ -426,17 +427,25 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
           try {
             const data = JSON.parse(dataStr);
 
-            // Extract conversation ID - ChatGLM uses conversation_id
+            // Extract conversation ID if present
             if (data.conversation_id) {
               sessionMap.set(sessionKey, data.conversation_id);
             }
 
-            // Extract content delta - ChatGLM format
-            // ChatGLM returns parts[].content[] with text
+            // Extract content delta - GLM International format
+            // Need to examine actual response format
             let delta = "";
 
-            // Try parts[].content[] format (new ChatGLM format)
-            if (data.parts && Array.isArray(data.parts)) {
+            // Try common response formats
+            if (data.text) {
+              delta = data.text;
+            } else if (data.content) {
+              delta = data.content;
+            } else if (data.delta) {
+              delta = data.delta;
+            } else if (data.message) {
+              delta = data.message;
+            } else if (data.parts && Array.isArray(data.parts)) {
               for (const part of data.parts) {
                 if (part && typeof part === "object") {
                   const p = part as Record<string, unknown>;
@@ -455,11 +464,6 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
                   if (delta) break;
                 }
               }
-            }
-
-            // Fallback to legacy format
-            if (!delta) {
-              delta = data.text || data.content || data.delta || "";
             }
 
             if (typeof delta === "string" && delta) {
@@ -500,7 +504,7 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
           emitDelta(mode, tagBuffer);
         }
 
-        console.log(`[ZWebStream] Stream completed. Parts: ${contentParts.length}, Tools: ${accumulatedToolCalls.length}`);
+        console.log(`[GlmIntlWebStream] Stream completed. Parts: ${contentParts.length}, Tools: ${accumulatedToolCalls.length}`);
 
         stream.push({
           type: "done",

@@ -243,6 +243,17 @@ const Z_WEB_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+export const GLM_INTL_WEB_BASE_URL = "https://chat.z.ai";
+export const GLM_INTL_WEB_DEFAULT_MODEL_ID = "glm-4-plus";
+const GLM_INTL_WEB_DEFAULT_CONTEXT_WINDOW = 128000;
+const GLM_INTL_WEB_DEFAULT_MAX_TOKENS = 4096;
+const GLM_INTL_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
 const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 const NVIDIA_DEFAULT_MODEL_ID = "nvidia/llama-3.1-nemotron-70b-instruct";
 const NVIDIA_DEFAULT_CONTEXT_WINDOW = 131072;
@@ -988,6 +999,40 @@ export async function buildQwenWebProvider(params?: {
   };
 }
 
+const QWEN_CN_WEB_BASE_URL = "https://chat2.qianwen.com";
+const QWEN_CN_WEB_DEFAULT_COST = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+const QWEN_CN_WEB_DEFAULT_CONTEXT_WINDOW = 128000;
+const QWEN_CN_WEB_DEFAULT_MAX_TOKENS = 4096;
+
+export async function buildQwenCNWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: QWEN_CN_WEB_BASE_URL,
+    api: "qwen-cn-web",
+    models: [
+      {
+        id: "Qwen3.5-Plus",
+        name: "Qwen 3.5 Plus (国内版)",
+        reasoning: false,
+        input: ["text"],
+        cost: QWEN_CN_WEB_DEFAULT_COST,
+        contextWindow: QWEN_CN_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: QWEN_CN_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "Qwen3.5-Turbo",
+        name: "Qwen 3.5 Turbo (国内版)",
+        reasoning: false,
+        input: ["text"],
+        cost: QWEN_CN_WEB_DEFAULT_COST,
+        contextWindow: QWEN_CN_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: QWEN_CN_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
 export async function buildKimiWebProvider(params?: {
   apiKey?: string;
 }): Promise<ProviderConfig> {
@@ -1108,6 +1153,35 @@ export async function buildZWebProvider(params?: {
         cost: Z_WEB_DEFAULT_COST,
         contextWindow: Z_WEB_DEFAULT_CONTEXT_WINDOW,
         maxTokens: Z_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
+export async function buildGlmIntlWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: GLM_INTL_WEB_BASE_URL,
+    api: "glm-intl-web",
+    models: [
+      {
+        id: "glm-4-plus",
+        name: "GLM-4 Plus (International)",
+        reasoning: false,
+        input: ["text"],
+        cost: GLM_INTL_WEB_DEFAULT_COST,
+        contextWindow: GLM_INTL_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: GLM_INTL_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "glm-4-think",
+        name: "GLM-4 Think (International)",
+        reasoning: true,
+        input: ["text"],
+        cost: GLM_INTL_WEB_DEFAULT_COST,
+        contextWindow: GLM_INTL_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: GLM_INTL_WEB_DEFAULT_MAX_TOKENS,
       },
     ],
   };
@@ -1456,6 +1530,17 @@ export async function resolveImplicitProviders(params: {
     ...(await buildZWebProvider({ apiKey: zWebKey })),
     apiKey: zWebKey,
   };
+
+  const glmIntlWebKey =
+    resolveEnvApiKeyVarName("glm-intl-web") ??
+    resolveApiKeyFromProfiles({ provider: "glm-intl-web", store: authStore });
+
+  if (glmIntlWebKey) {
+    providers["glm-intl-web"] = {
+      ...(await buildGlmIntlWebProvider({ apiKey: glmIntlWebKey })),
+      apiKey: glmIntlWebKey,
+    };
+  }
 
   const manusApiKey =
     resolveEnvApiKeyVarName("manus-api") ??

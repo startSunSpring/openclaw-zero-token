@@ -198,9 +198,15 @@ const AUTH_CHOICE_GROUP_DEFS: {
   },
   {
     value: "qwen-web",
-    label: "Qwen Web",
-    hint: "Browser-based authentication",
+    label: "Qwen Web (International)",
+    hint: "chat.qwen.ai — Browser-based authentication",
     choices: ["qwen-web"],
+  },
+  {
+    value: "qwen-cn-web",
+    label: "Qwen Web (国内版)",
+    hint: "qianwen.com — 通过浏览器认证",
+    choices: ["qwen-cn-web"],
   },
   {
     value: "kimi-web",
@@ -222,9 +228,15 @@ const AUTH_CHOICE_GROUP_DEFS: {
   },
   {
     value: "glm-web",
-    label: "GLM Web",
-    hint: "Browser-based authentication",
+    label: "GLM Web (智谱清言)",
+    hint: "chatglm.cn browser-based",
     choices: ["glm-web"],
+  },
+  {
+    value: "glm-intl-web",
+    label: "GLM Web (International)",
+    hint: "chat.z.ai — Browser-based authentication",
+    choices: ["glm-intl-web"],
   },
   {
     value: "manus",
@@ -405,8 +417,13 @@ const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
   },
   {
     value: "qwen-web",
-    label: "Qwen Browser",
-    hint: "Access Qwen via browser session",
+    label: "Qwen Browser (International)",
+    hint: "Access Qwen via chat.qwen.ai",
+  },
+  {
+    value: "qwen-cn-web",
+    label: "Qwen Browser (国内版)",
+    hint: "通过 qianwen.com 访问通义千问",
   },
   {
     value: "kimi-web",
@@ -425,8 +442,13 @@ const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
   },
   {
     value: "glm-web",
-    label: "Z Browser",
-    hint: "Access Z.AI via browser",
+    label: "Z Browser (智谱清言)",
+    hint: "Access chatglm.cn via browser",
+  },
+  {
+    value: "glm-intl-web",
+    label: "GLM Browser (International)",
+    hint: "Access chat.z.ai via browser",
   },
   {
     value: "manus-api-key",

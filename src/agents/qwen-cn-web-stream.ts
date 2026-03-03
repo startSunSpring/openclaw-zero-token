@@ -8,21 +8,21 @@ import {
   type ToolResultMessage,
 } from "@mariozechner/pi-ai";
 import {
-  ZWebClientBrowser,
-  type ZWebClientOptions,
-} from "../providers/glm-web-client-browser.js";
+  QwenCNWebClientBrowser,
+  type QwenCNWebClientOptions,
+} from "../providers/qwen-cn-web-client-browser.js";
 
 const sessionMap = new Map<string, string>();
 
-export function createZWebStreamFn(cookieOrJson: string): StreamFn {
-  let options: ZWebClientOptions;
+export function createQwenCNWebStreamFn(cookieOrJson: string): StreamFn {
+  let options: QwenCNWebClientOptions;
   try {
     const parsed = JSON.parse(cookieOrJson);
     options = parsed;
   } catch {
     options = { cookie: cookieOrJson, xsrfToken: "" };
   }
-  const client = new ZWebClientBrowser(options);
+  const client = new QwenCNWebClientBrowser(options);
 
   return (model, context, streamOptions) => {
     const stream = createAssistantMessageEventStream();
@@ -150,13 +150,13 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
         }
 
         if (!prompt) {
-          throw new Error("No message found to send to ChatGLM API");
+          throw new Error("No message found to send to Qwen API");
         }
 
-        console.log(`[ZWebStream] Starting run for session: ${sessionKey}`);
-        console.log(`[ZWebStream] Conversation ID: ${sessionId || "new"}`);
-        console.log(`[ZWebStream] Tools available: ${tools.length}`);
-        console.log(`[ZWebStream] Prompt length: ${prompt.length}`);
+        console.log(`[QwenCNWebStream] Starting run for session: ${sessionKey}`);
+        console.log(`[QwenCNWebStream] Conversation ID: ${sessionId || "new"}`);
+        console.log(`[QwenCNWebStream] Tools available: ${tools.length}`);
+        console.log(`[QwenCNWebStream] Prompt length: ${prompt.length}`);
 
         const responseStream = await client.chatCompletions({
           sessionId,
@@ -166,7 +166,7 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
         });
 
         if (!responseStream) {
-          throw new Error("ChatGLM API returned empty response body");
+          throw new Error("Qwen API returned empty response body");
         }
 
         const reader = responseStream.getReader();
@@ -413,8 +413,22 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
           checkTags();
         };
 
+        let hasExtractedContent = false;
+        let lastExtractedContent = '';
         const processLine = (line: string) => {
-          if (!line || !line.startsWith("data:")) {
+          if (!line) {
+            return;
+          }
+
+          // Parse SSE format: event: xxx\ndata: yyy
+          // Current line could be event: or data:
+          if (line.startsWith("event:")) {
+            const eventType = line.slice(6).trim();
+            console.log(`[QwenCNWebStream] SSE event type: ${eventType}`);
+            return;
+          }
+
+          if (!line.startsWith("data:")) {
             return;
           }
 
@@ -425,45 +439,82 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
 
           try {
             const data = JSON.parse(dataStr);
-
-            // Extract conversation ID - ChatGLM uses conversation_id
-            if (data.conversation_id) {
-              sessionMap.set(sessionKey, data.conversation_id);
+            console.log(`[QwenCNWebStream] Parsed data keys: ${Object.keys(data).join(', ')}`);
+            if (Object.keys(data).length > 0) {
+              console.log(`[QwenCNWebStream] Data sample: ${JSON.stringify(data).substring(0, 200)}...`);
             }
-
-            // Extract content delta - ChatGLM format
-            // ChatGLM returns parts[].content[] with text
-            let delta = "";
-
-            // Try parts[].content[] format (new ChatGLM format)
-            if (data.parts && Array.isArray(data.parts)) {
-              for (const part of data.parts) {
-                if (part && typeof part === "object") {
-                  const p = part as Record<string, unknown>;
-                  const content = p.content;
-                  if (Array.isArray(content)) {
-                    for (const c of content) {
-                      if (c && typeof c === "object") {
-                        const cc = c as Record<string, unknown>;
-                        if (cc.type === "text" && typeof cc.text === "string") {
-                          delta = cc.text;
-                          break;
-                        }
-                      }
-                    }
-                  }
-                  if (delta) break;
+            // Deep debug for data.data
+            if (data.data && typeof data.data === 'object') {
+              console.log(`[QwenCNWebStream] data.data keys: ${Object.keys(data.data).join(', ')}`);
+              if (data.data.messages && Array.isArray(data.data.messages)) {
+                console.log(`[QwenCNWebStream] messages array length: ${data.data.messages.length}`);
+                for (let i = 0; i < data.data.messages.length; i++) {
+                  const msg = data.data.messages[i];
+                  console.log(`[QwenCNWebStream] messages[${i}] keys: ${Object.keys(msg).join(', ')}`);
+                  if (msg.content) console.log(`[QwenCNWebStream] messages[${i}].content: "${String(msg.content).substring(0, 100)}"`);
+                  if (msg.text) console.log(`[QwenCNWebStream] messages[${i}].text: "${String(msg.text).substring(0, 100)}"`);
+                  if (msg.delta) console.log(`[QwenCNWebStream] messages[${i}].delta: "${String(msg.delta).substring(0, 100)}"`);
                 }
               }
             }
 
-            // Fallback to legacy format
-            if (!delta) {
-              delta = data.text || data.content || data.delta || "";
+            // Extract conversation ID
+            if (data.sessionId || data.sessionId) {
+              sessionMap.set(sessionKey, data.sessionId || data.sessionId);
             }
 
+            // Extract content delta - Qwen v2 uses choices[0].delta.content
+            // Qwen CN Web returns different structure
+            console.log(`[QwenCNWebStream] Debug data.data: ${JSON.stringify(data.data)?.substring(0, 200)}`);
+            console.log(`[QwenCNWebStream] Debug data.communication: ${JSON.stringify(data.communication)?.substring(0, 200)}`);
+
+            // Debug messages array if present
+            if (data.data?.messages && Array.isArray(data.data.messages) && data.data.messages.length > 0) {
+              console.log(`[QwenCNWebStream] Debug messages[0]: ${JSON.stringify(data.data.messages[0])?.substring(0, 300)}`);
+              // Check for content in various possible locations
+              const msg = data.data.messages[0];
+              console.log(`[QwenCNWebStream] Debug msg keys: ${Object.keys(msg).join(', ')}`);
+              if (msg.content) console.log(`[QwenCNWebStream] Debug msg.content: ${typeof msg.content} = "${String(msg.content).substring(0, 100)}"`);
+              if (msg.text) console.log(`[QwenCNWebStream] Debug msg.text: ${typeof msg.text} = "${String(msg.text).substring(0, 100)}"`);
+              if (msg.delta) console.log(`[QwenCNWebStream] Debug msg.delta: ${typeof msg.delta} = "${String(msg.delta).substring(0, 100)}"`);
+            }
+
+            let delta = '';
+            // Qwen CN Web specific extraction
+            if (data.data?.messages && Array.isArray(data.data.messages)) {
+              // Find the last message with content field (likely assistant response)
+              for (let i = data.data.messages.length - 1; i >= 0; i--) {
+                const msg = data.data.messages[i];
+                if (msg.content && typeof msg.content === 'string') {
+                  delta = msg.content;
+                  console.log(`[QwenCNWebStream] Extracted content from messages[${i}], length: ${delta.length}`);
+                  break;
+                }
+              }
+            }
+
+            // Fallback to other fields if no content found in messages
+            if (!delta) {
+              delta = data.choices?.[0]?.delta?.content;
+              if (!delta && data.data) {
+                delta = data.data.text ?? data.data.content ?? data.data.delta;
+              }
+              if (!delta && data.communication) {
+                delta = data.communication.text ?? data.communication.content;
+              }
+              if (!delta) {
+                delta = data.text ?? data.content ?? data.delta;
+              }
+            }
+            console.log(`[QwenCNWebStream] Delta extracted: ${typeof delta}, value="${delta}"`);
             if (typeof delta === "string" && delta) {
-              pushDelta(delta);
+              // Avoid duplicate content from multiple SSE events
+              if (delta !== lastExtractedContent) {
+                lastExtractedContent = delta;
+                pushDelta(delta);
+              } else {
+                console.log(`[QwenCNWebStream] Skipping duplicate content`);
+              }
             }
           } catch {
             // Ignore parse errors
@@ -500,7 +551,7 @@ export function createZWebStreamFn(cookieOrJson: string): StreamFn {
           emitDelta(mode, tagBuffer);
         }
 
-        console.log(`[ZWebStream] Stream completed. Parts: ${contentParts.length}, Tools: ${accumulatedToolCalls.length}`);
+        console.log(`[QwenCNWebStream] Stream completed. Parts: ${contentParts.length}, Tools: ${accumulatedToolCalls.length}`);
 
         stream.push({
           type: "done",

@@ -11,10 +11,12 @@ export type ModelApi =
   | "claude-web"
   | "chatgpt-web"
   | "qwen-web"
+  | "qwen-cn-web"
   | "kimi-web"
   | "gemini-web"
   | "grok-web"
   | "glm-web"
+  | "glm-intl-web"
   | "manus-api";
 
 export type ModelCompatConfig = {

@@ -35,10 +35,12 @@ import { createDoubaoWebStreamFn } from "../../doubao-web-stream.js";
 import { createClaudeWebStreamFn } from "../../claude-web-stream.js";
 import { createChatGPTWebStreamFn } from "../../chatgpt-web-stream.js";
 import { createQwenWebStreamFn } from "../../qwen-web-stream.js";
+import { createQwenCNWebStreamFn } from "../../qwen-cn-web-stream.js";
 import { createKimiWebStreamFn } from "../../kimi-web-stream.js";
 import { createGeminiWebStreamFn } from "../../gemini-web-stream.js";
 import { createGrokWebStreamFn } from "../../grok-web-stream.js";
 import { createZWebStreamFn } from "../../glm-web-stream.js";
+import { createGlmIntlWebStreamFn } from "../../glm-intl-web-stream.js";
 import { createManusApiStreamFn } from "../../manus-api-stream.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../defaults.js";
 import { resolveOpenClawDocsPath } from "../../docs-path.js";
@@ -659,6 +661,9 @@ export async function runEmbeddedAttempt(
       } else if (params.model.api === "qwen-web") {
         const auth = (await params.authStorage.getApiKey("qwen-web")) || "";
         activeSession.agent.streamFn = createQwenWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "qwen-cn-web") {
+        const auth = (await params.authStorage.getApiKey("qwen-cn-web")) || "";
+        activeSession.agent.streamFn = createQwenCNWebStreamFn(auth) as StreamFn;
       } else if (params.model.api === "kimi-web") {
         const auth = (await params.authStorage.getApiKey("kimi-web")) || "";
         activeSession.agent.streamFn = createKimiWebStreamFn(auth) as StreamFn;
@@ -671,6 +676,9 @@ export async function runEmbeddedAttempt(
       } else if (params.model.api === "glm-web") {
         const auth = (await params.authStorage.getApiKey("glm-web")) || "";
         activeSession.agent.streamFn = createZWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "glm-intl-web") {
+        const auth = (await params.authStorage.getApiKey("glm-intl-web")) || "";
+        activeSession.agent.streamFn = createGlmIntlWebStreamFn(auth) as StreamFn;
       } else if (params.model.api === "manus-api") {
         const apiKey = (await params.authStorage.getApiKey("manus-api")) || "";
         activeSession.agent.streamFn = createManusApiStreamFn(apiKey) as StreamFn;

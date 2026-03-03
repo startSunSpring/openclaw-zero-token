@@ -53,10 +53,12 @@ export type AuthChoice =
   | "claude-web"
   | "chatgpt-web"
   | "qwen-web"
+  | "qwen-cn-web"
   | "kimi-web"
   | "gemini-web"
   | "grok-web"
   | "glm-web"
+  | "glm-intl-web"
   | "manus-api-key"
   | "custom-api-key"
   | "skip";
@@ -91,10 +93,12 @@ export type AuthChoiceGroupId =
   | "claude-web"
   | "chatgpt-web"
   | "qwen-web"
+  | "qwen-cn-web"
   | "kimi-web"
   | "gemini-web"
   | "grok-web"
   | "glm-web"
+  | "glm-intl-web"
   | "manus-api"
   | "custom";
 export type GatewayAuthChoice = "token" | "password";
@@ -155,6 +159,7 @@ export type OnboardOptions = {
   geminiWebCookie?: string;
   grokWebCookie?: string;
   zWebCookie?: string;
+  glmIntlWebCookie?: string;
   manusWebCookie?: string;
   manusApiKey?: string;
   customBaseUrl?: string;

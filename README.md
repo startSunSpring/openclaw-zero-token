@@ -23,18 +23,36 @@ OpenClaw Zero Token is a fork of [OpenClaw](https://github.com/openclaw/openclaw
 
 ### Supported Platforms
 
+#### International (海外)
+
+| Platform | Status | Domain | Models |
+|----------|--------|--------|--------|
+| Qwen (International) | ✅ **Tested** | chat.qwen.ai | Qwen 3.5 Plus, Qwen 3.5 Turbo |
+| Claude Web | ✅ **Tested** | claude.ai | claude-3-5-sonnet, claude-3-opus, claude-3-haiku |
+| ChatGPT Web | ✅ **Tested** | chatgpt.com | GPT-4, GPT-4 Turbo |
+| Gemini Web | ✅ **Tested** | gemini.google.com | Gemini Pro, Gemini Ultra |
+| Grok Web | ✅ **Tested** | grok.com | Grok 1, Grok 2 |
+| GLM Web (International) | ✅ **New** | chat.z.ai | GLM-4 Plus, GLM-4 Think |
+
+#### 国内 (China)
+
+| Platform | Status | Domain | Models |
+|----------|--------|--------|--------|
+| DeepSeek | ✅ **Tested** | chat.deepseek.com | deepseek-chat, deepseek-reasoner |
+| Qwen (国内版) | ✅ **New** | qianwen.com | Qwen 3.5 Plus, Qwen 3.5 Turbo |
+| Doubao (豆包) | ✅ **Tested** | doubao.com | doubao-seed-2.0, doubao-pro |
+| Kimi | ✅ **Tested** | kimi.com | Moonshot v1 8K, 32K, 128K |
+| GLM Web (智谱清言) | ✅ **Tested** | chatglm.cn | glm-4-Plus, glm-4-Think |
+
+#### API Providers
+
 | Platform | Status | Models |
 |----------|--------|--------|
-| DeepSeek | ✅ **Tested** | deepseek-chat, deepseek-reasoner |
-| Qwen (千问) | ✅ **Tested** | Qwen 3.5 Plus, Qwen 3.5 Turbo |
-| Kimi | ✅ **Tested** | Moonshot v1 8K, 32K, 128K |
-| Claude Web | ✅ **Tested** | claude-3-5-sonnet-20241022, claude-3-opus-20240229, claude-3-haiku-20240307 |
-| Doubao (豆包) | ✅ **Tested** | doubao-seed-2.0, doubao-pro |
-| ChatGPT Web | ✅ **Tested** | GPT-4, GPT-4 Turbo |
-| Gemini Web | ✅ **Tested** | Gemini Pro, Gemini Ultra |
-| Grok Web | ✅ **Tested** | Grok 1, Grok 2 |
-| GLM Web (智谱清言) | ✅ **Tested** | glm-4-Plus, glm-4-Think |
 | Manus API | ✅ **Tested** | Manus 1.6, Manus 1.6 Lite (API key, free tier) |
+
+> **Qwen 国内 vs 海外区别：**
+> - **Qwen International** (chat.qwen.ai) — 面向全球用户，无需翻墙
+> - **Qwen 国内版** (qianwen.com) — 面向中国用户，速度更快，功能更全（支持深度搜索、代码助手、图片生成等）
 
 > **Note:** All web-based providers use browser automation (Playwright) for authentication and API access. Platforms marked **Tested** have been verified to work.
 

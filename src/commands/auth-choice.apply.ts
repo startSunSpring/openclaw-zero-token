@@ -6,10 +6,12 @@ import { applyAuthChoiceApiProviders } from "./auth-choice.apply.api-providers.j
 import { applyAuthChoiceClaudeWeb } from "./auth-choice.apply.claude-web.js";
 import { applyAuthChoiceChatGPTWeb } from "./auth-choice.apply.chatgpt-web.js";
 import { applyAuthChoiceQwenWeb } from "./auth-choice.apply.qwen-web.js";
+import { applyAuthChoiceQwenCNWeb } from "./auth-choice.apply.qwen-cn-web.js";
 import { applyAuthChoiceKimiWeb } from "./auth-choice.apply.kimi-web.js";
 import { applyAuthChoiceGeminiWeb } from "./auth-choice.apply.gemini-web.js";
 import { applyAuthChoiceGrokWeb } from "./auth-choice.apply.grok-web.js";
 import { applyAuthChoiceZWeb } from "./auth-choice.apply.glm-web.js";
+import { applyAuthChoiceGlmIntlWeb } from "./auth-choice.apply.glm-intl-web.js";
 import { applyAuthChoiceManusApi } from "./auth-choice.apply.manus-api.js";
 import { applyAuthChoiceCopilotProxy } from "./auth-choice.apply.copilot-proxy.js";
 import { applyAuthChoiceDeepseekWeb } from "./auth-choice.apply.deepseek-web.js";
@@ -46,10 +48,12 @@ export type ApplyAuthChoiceParams = {
     doubaoWebCookie?: string;
     chatgptWebCookie?: string;
     qwenWebCookie?: string;
+    qwenCNWebCookie?: string;
     kimiWebCookie?: string;
     geminiWebCookie?: string;
     grokWebCookie?: string;
     zWebCookie?: string;
+    glmIntlWebCookie?: string;
     manusWebCookie?: string;
     manusApiKey?: string;
   };
@@ -80,10 +84,12 @@ export async function applyAuthChoice(
     applyAuthChoiceClaudeWeb,
     applyAuthChoiceChatGPTWeb,
     applyAuthChoiceQwenWeb,
+    applyAuthChoiceQwenCNWeb,
     applyAuthChoiceKimiWeb,
     applyAuthChoiceGeminiWeb,
     applyAuthChoiceGrokWeb,
     applyAuthChoiceZWeb,
+    applyAuthChoiceGlmIntlWeb,
     applyAuthChoiceManusApi,
     applyAuthChoiceXAI,
   ];

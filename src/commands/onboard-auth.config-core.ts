@@ -670,6 +670,33 @@ export async function applyQwenWebConfig(cfg: OpenClawConfig): Promise<OpenClawC
   return applyAgentDefaultModelPrimary(next, QWEN_WEB_DEFAULT_MODEL_REF);
 }
 
+// Qwen CN Web (国内版 qianwen.com)
+const QWEN_CN_WEB_DEFAULT_MODEL_ID = "Qwen3.5-Plus";
+const QWEN_CN_WEB_DEFAULT_MODEL_REF = `qwen-cn-web/${QWEN_CN_WEB_DEFAULT_MODEL_ID}`;
+
+export async function applyQwenCNWebProviderConfig(cfg: OpenClawConfig): Promise<OpenClawConfig> {
+  const models = { ...cfg.agents?.defaults?.models };
+  models[QWEN_CN_WEB_DEFAULT_MODEL_REF] = {
+    ...models[QWEN_CN_WEB_DEFAULT_MODEL_REF],
+    alias: models[QWEN_CN_WEB_DEFAULT_MODEL_REF]?.alias ?? "Qwen 3.5 Plus (国内版)",
+  };
+  const { buildQwenCNWebProvider } = await import("../agents/models-config.providers.js");
+  const defaultProvider = await buildQwenCNWebProvider();
+  return applyProviderConfigWithDefaultModels(cfg, {
+    agentModels: models,
+    providerId: "qwen-cn-web",
+    api: "qwen-cn-web",
+    baseUrl: defaultProvider.baseUrl,
+    defaultModels: defaultProvider.models ?? [],
+    defaultModelId: QWEN_CN_WEB_DEFAULT_MODEL_ID,
+  });
+}
+
+export async function applyQwenCNWebConfig(cfg: OpenClawConfig): Promise<OpenClawConfig> {
+  const next = await applyQwenCNWebProviderConfig(cfg);
+  return applyAgentDefaultModelPrimary(next, QWEN_CN_WEB_DEFAULT_MODEL_REF);
+}
+
 // Kimi Web
 const KIMI_WEB_DEFAULT_MODEL_ID = "moonshot-v1-32k";
 const KIMI_WEB_DEFAULT_MODEL_REF = `kimi-web/${KIMI_WEB_DEFAULT_MODEL_ID}`;
@@ -808,5 +835,33 @@ export async function applyGlmWebProviderConfig(cfg: OpenClawConfig): Promise<Op
 export async function applyGlmWebConfig(cfg: OpenClawConfig): Promise<OpenClawConfig> {
   const next = await applyGlmWebProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, GLM_WEB_DEFAULT_MODEL_REF);
+}
+
+// GLM Intl Web (International - chat.z.ai)
+const GLM_INTL_WEB_DEFAULT_MODEL_ID = "glm-4-plus";
+const GLM_INTL_WEB_DEFAULT_MODEL_REF = `glm-intl-web/${GLM_INTL_WEB_DEFAULT_MODEL_ID}`;
+const GLM_INTL_WEB_BASE_URL = "https://chat.z.ai";
+
+export async function applyGlmIntlWebProviderConfig(cfg: OpenClawConfig): Promise<OpenClawConfig> {
+  const models = { ...cfg.agents?.defaults?.models };
+  models[GLM_INTL_WEB_DEFAULT_MODEL_REF] = {
+    ...models[GLM_INTL_WEB_DEFAULT_MODEL_REF],
+    alias: models[GLM_INTL_WEB_DEFAULT_MODEL_REF]?.alias ?? "GLM-4 Plus (International)",
+  };
+  const { buildGlmIntlWebProvider } = await import("../agents/models-config.providers.js");
+  const defaultProvider = await buildGlmIntlWebProvider();
+  return applyProviderConfigWithDefaultModels(cfg, {
+    agentModels: models,
+    providerId: "glm-intl-web",
+    api: "glm-intl-web",
+    baseUrl: defaultProvider.baseUrl ?? GLM_INTL_WEB_BASE_URL,
+    defaultModels: defaultProvider.models ?? [],
+    defaultModelId: GLM_INTL_WEB_DEFAULT_MODEL_ID,
+  });
+}
+
+export async function applyGlmIntlWebConfig(cfg: OpenClawConfig): Promise<OpenClawConfig> {
+  const next = await applyGlmIntlWebProviderConfig(cfg);
+  return applyAgentDefaultModelPrimary(next, GLM_INTL_WEB_DEFAULT_MODEL_REF);
 }
 

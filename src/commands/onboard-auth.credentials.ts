@@ -282,6 +282,7 @@ export {
 } from "./onboard-auth.models.js";
 
 export const CLAUDE_WEB_DEFAULT_MODEL_REF = "claude-web/claude-3-5-sonnet-20241022";
+export const GLM_INTL_WEB_DEFAULT_MODEL_REF = "glm-intl-web/glm-4-plus";
 
 export async function setSiliconFlowGlobalApiKey(key: string, agentDir?: string) {
   upsertAuthProfile({
@@ -413,6 +414,27 @@ export async function setQwenWebCookie(
   });
 }
 
+export async function setQwenCNWebCredentials(
+  options: { cookie: string; xsrfToken: string; userAgent?: string; ut?: string },
+  agentDir?: string,
+) {
+  const credentialData = JSON.stringify({
+    cookie: options.cookie,
+    xsrfToken: options.xsrfToken,
+    userAgent: options.userAgent,
+    ut: options.ut,
+  });
+  upsertAuthProfile({
+    profileId: "qwen-cn-web:default",
+    credential: {
+      type: "api_key",
+      provider: "qwen-cn-web",
+      key: credentialData,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
 export async function setKimiWebCookie(
   options: { cookie: string },
   agentDir?: string,
@@ -480,6 +502,21 @@ export async function setManusApiKey(key: string, agentDir?: string) {
       type: "api_key",
       provider: "manus-api",
       key,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setGlmIntlWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "glm-intl-web:default",
+    credential: {
+      type: "api_key",
+      provider: "glm-intl-web",
+      key: options.cookie,
     },
     agentDir: resolveAuthAgentDir(agentDir),
   });
